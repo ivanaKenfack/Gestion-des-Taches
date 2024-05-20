@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
-
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LoginPage(),
-    );
-  }
-}
+import 'HomePage.dart';
+import 'TasksPage.dart';
+import 'main.dart';
 
 class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
+  final String correctUsername = 'ivana';
+  final String correctPassword = '123';
+
+  void _login(BuildContext context, String username, String password) {
+    if (username == correctUsername && password == correctPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const NavigationExample()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Identifiants incorrects')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _usernameController = TextEditingController();
+    final TextEditingController _passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.grey[300],
       body: Center(
@@ -29,22 +42,11 @@ class LoginPage extends StatelessWidget {
                   TextButton(
                     onPressed: () {},
                     style: TextButton.styleFrom(
-                      backgroundColor: Colors.black54,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    child: Text(
-                      'Back to Home',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
-                    child: Text(
-                      'Register',
+                    child: const Text(
+                      'S\'inscrire',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -53,7 +55,7 @@ class LoginPage extends StatelessWidget {
             ),
             Center(
               child: Container(
-                padding: EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(20.0),
                 width: 400.0,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -63,7 +65,7 @@ class LoginPage extends StatelessWidget {
                       color: Colors.grey.withOpacity(0.5),
                       spreadRadius: 5,
                       blurRadius: 7,
-                      offset: Offset(0, 3),
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -73,72 +75,76 @@ class LoginPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Image.network(
-                        'https://img.icons8.com/ios-filled/50/000000/combo-chart--v2.png', // Example icon, replace with your icon
+                        'https://img.icons8.com/ios-filled/50/000000/combo-chart--v2.png', // image de l'icone
                         height: 50,
                         color: Colors.blue,
                       ),
                     ),
-                    Text(
-                      'Login',
+                    const Text(
+                      'Connexion',
                       style: TextStyle(
                         fontSize: 24,
                         color: Colors.blue,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Sign in to your account',
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Connexion à votre compte',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.black54,
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     TextField(
-                      decoration: InputDecoration(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.person),
                         labelText: 'Username',
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextField(
+                      controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.lock),
                         labelText: 'Password',
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                       ),
-                      onPressed: () {},
-                      child: Text(
+                      onPressed: () {
+                        _login(context, _usernameController.text, _passwordController.text);
+                      },
+                      child: const Text(
                         'Login',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextButton(
                       onPressed: () {},
-                      child: Text(
-                        'I forgot my password. Click here to reset',
+                      child: const Text(
+                        'Mot de passe oublié?',
                         style: TextStyle(color: Colors.black54),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     OutlinedButton(
                       onPressed: () {},
-                      child: Text(
-                        'Register New Account',
+                      child: const Text(
+                        'Créer un nouveau compte',
                         style: TextStyle(color: Colors.black),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
