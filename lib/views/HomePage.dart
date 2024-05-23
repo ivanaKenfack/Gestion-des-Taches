@@ -31,14 +31,14 @@ class _HomePageState extends State<HomePage> {
   final String userName = 'Ivana'; // Nom de l'utilisateur connecté
   final List<Project> projects = [
     Project(
-      name: 'Project Alpha',
+      name: 'Project A',
       members: ['Alice', 'Bob', 'Charlie'],
-      description: 'Description of Project Alpha',
+      description: 'Description du Projet A',
     ),
     Project(
-      name: 'Project Beta',
+      name: 'Project B',
       members: ['Dave', 'Eve', 'Frank'],
-      description: 'Description of Project Beta',
+      description: 'Description du Projet B',
     ),
     // Ajoutez d'autres projets ici
   ];
@@ -320,15 +320,53 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(
-                itemCount: widget.project.tasks.length,
-                itemBuilder: (context, index) {
-                  final task = widget.project.tasks[index];
-                  return ListTile(
-                    title: Text(task.name),
-                    subtitle: Text('Assignée à: ${task.assignedTo}'),
-                  );
-                },
+              child: ListView(
+                children: [
+                  Table(
+                    border: TableBorder.all(),
+                    columnWidths: const {
+                      0: FlexColumnWidth(),
+                      1: FlexColumnWidth(),
+                    },
+                    children: [
+                      TableRow(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                        ),
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Nom de la tâche',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Responsable',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      ...widget.project.tasks.map((task) {
+                        return TableRow(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(task.name),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(task.assignedTo),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
