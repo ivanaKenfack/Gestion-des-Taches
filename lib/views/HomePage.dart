@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_de_taches/models/Project.dart';
+import 'package:gestion_de_taches/models/Task.dart';
+import 'shared_prefs_service.dart';
+import 'ConnectionPage.dart'; // Assurez-vous d'importer la page de connexion
 
 void main() {
   runApp(const MyApp());
@@ -28,25 +32,55 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final String userName = 'Ivana'; // Nom de l'utilisateur connecté
-  final List<Project> projects = [
-    Project(
-      name: 'Project A',
-      members: ['Alice', 'Bob', 'Charlie'],
-      description: 'Description du Projet A',
-    ),
-    Project(
-      name: 'Project B',
-      members: ['Dave', 'Eve', 'Frank'],
-      description: 'Description du Projet B',
-    ),
-    // Ajoutez d'autres projets ici
-  ];
+  String? userName;
+  final SharedPrefsService _prefsService = SharedPrefsService();
+  List<Project> projects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+    _loadProjects();
+  }
+
+  void _loadUserName() async {
+    final loadedUserName = await _prefsService.getUsername();
+    setState(() {
+      userName = loadedUserName;
+    });
+  }
+
+  void _loadProjects() async {
+    final loadedProjects = await _prefsService.loadProjects();
+    setState(() {
+      projects = loadedProjects;
+    });
+  }
+
+  void _saveProjects() {
+    _prefsService.saveProjects(projects);
+  }
 
   void _addProject(Project project) {
     setState(() {
       projects.add(project);
     });
+    _saveProjects();
+  }
+
+  void _removeProject(Project project) {
+    setState(() {
+      projects.remove(project);
+    });
+    _saveProjects();
+  }
+
+  void _logout() async {
+    await _prefsService.logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 
   @override
@@ -55,6 +89,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Accueil'),
         backgroundColor: Theme.of(context).colorScheme.primary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -62,7 +102,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Bonjour, $userName!',
+              userName != null ? 'Bonjour, $userName!' : 'Bonjour!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -74,7 +114,14 @@ class _HomePageState extends State<HomePage> {
               child: ListView.builder(
                 itemCount: projects.length,
                 itemBuilder: (context, index) {
-                  return ProjectCard(project: projects[index]);
+                  return Dismissible(
+                    key: Key(projects[index].name),
+                    onDismissed: (direction) {
+                      _removeProject(projects[index]);
+                    },
+                    background: Container(color: Colors.red),
+                    child: ProjectCard(project: projects[index]),
+                  );
                 },
               ),
             ),
@@ -98,7 +145,7 @@ class _HomePageState extends State<HomePage> {
 class ProjectCard extends StatelessWidget {
   final Project project;
 
-  const ProjectCard({required this.project});
+  const ProjectCard({super.key, required this.project});
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +206,7 @@ class ProjectCard extends StatelessWidget {
 class AddProjectDialog extends StatefulWidget {
   final Function(Project) onAddProject;
 
-  const AddProjectDialog({required this.onAddProject});
+  const AddProjectDialog({super.key, required this.onAddProject});
 
   @override
   _AddProjectDialogState createState() => _AddProjectDialogState();
@@ -228,7 +275,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
 class ProjectDetailPage extends StatefulWidget {
   final Project project;
 
-  const ProjectDetailPage({required this.project});
+  const ProjectDetailPage({super.key, required this.project});
 
   @override
   _ProjectDetailPageState createState() => _ProjectDetailPageState();
@@ -237,12 +284,13 @@ class ProjectDetailPage extends StatefulWidget {
 class _ProjectDetailPageState extends State<ProjectDetailPage> {
   final TextEditingController _taskController = TextEditingController();
   String _selectedMember = '';
+  final String _descriptions = '';
 
   void _addTask() {
     final taskName = _taskController.text;
     if (taskName.isNotEmpty && _selectedMember.isNotEmpty) {
       setState(() {
-        widget.project.tasks.add(Task(name: taskName, assignedTo: _selectedMember));
+        widget.project.tasks.add(Task(title: taskName,description: _descriptions, dueDate: DateTime.now(), assignedTo: _selectedMember));
         _taskController.clear();
         _selectedMember = '';
       });
@@ -355,7 +403,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(task.name),
+                              child: Text(task.title),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -374,28 +422,4 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
       ),
     );
   }
-}
-
-class Project {
-  final String name;
-  final List<String> members;
-  final String description;
-  final List<Task> tasks;
-
-  Project({
-    required this.name,
-    required this.members,
-    required this.description,
-    this.tasks = const [],
-  });
-}
-
-class Task {
-  final String name;
-  final String assignedTo;
-
-  Task({
-    required this.name,
-    required this.assignedTo,
-  });
 }

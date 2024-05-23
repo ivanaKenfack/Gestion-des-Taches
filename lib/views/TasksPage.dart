@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/Task.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gestion_de_taches/models/Task.dart'; // Assurez-vous d'importer le fichier Task correctement
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -11,24 +13,42 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  final List<Task> _tasks = [
-    Task(
-      title: 'Écrire le code',
-      description: 'Faire la tâche 1',
-      dueDate: DateTime.now().add(const Duration(days: 1)), assignedTo: '',
-    ),
-    Task(
-      title: 'Terminer le projet',
-      description: 'Faire la tâche 2',
-      isCompleted: true,
-      dueDate: DateTime.now().add(const Duration(days: 2)), assignedTo: '',
-    ),
-    Task(
-      title: 'Contacter le client',
-      description: 'Discussion à propos des modalités du projet',
-      dueDate: DateTime.now().add(const Duration(days: 3)), assignedTo: '',
-    ),
-  ];
+  late List<Task> _tasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  void _loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final tasksJson = prefs.getStringList('tasks');
+    print('Loaded tasks JSON: $tasksJson'); // Debug print
+    if (tasksJson != null) {
+      setState(() {
+        _tasks = tasksJson.map((json) {
+          print('Decoding task JSON: $json'); // Debug print
+          return Task.fromJson(Map<String, dynamic>.from(jsonDecode(json)));
+        }).toList();
+        print('Tasks loaded: $_tasks'); // Debug print
+      });
+    } else {
+      _tasks = [];
+      print('No tasks found, initialized with empty list.'); // Debug print
+    }
+  }
+
+  void _saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final tasksJson = _tasks.map((task) {
+      final json = jsonEncode(task.toJson());
+      print('Encoding task to JSON: $json'); // Debug print
+      return json;
+    }).toList();
+    await prefs.setStringList('tasks', tasksJson.cast<String>());
+    print('Tasks saved: $tasksJson'); // Debug print
+  }
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -40,11 +60,13 @@ class _TasksPageState extends State<TasksPage> {
       _tasks.add(Task(
         title: _titleController.text,
         description: _descriptionController.text,
-        dueDate: _selectedDate, assignedTo: '',
+        dueDate: _selectedDate,
+        assignedTo: '',
       ));
       _titleController.clear();
       _descriptionController.clear();
     });
+    _saveTasks(); // Save tasks immediately after adding
     Navigator.of(context).pop();
   }
 
@@ -52,6 +74,7 @@ class _TasksPageState extends State<TasksPage> {
     setState(() {
       _tasks[index] = task;
     });
+    _saveTasks(); // Save tasks immediately after updating
     Navigator.of(context).pop();
   }
 
@@ -165,7 +188,8 @@ class _TasksPageState extends State<TasksPage> {
                   title: _titleController.text,
                   description: _descriptionController.text,
                   dueDate: _selectedDate,
-                  isCompleted: task.isCompleted, assignedTo: '',
+                  isCompleted: task.isCompleted,
+                  assignedTo: '',
                 ),
                 index,
               );
@@ -244,6 +268,7 @@ class _TasksPageState extends State<TasksPage> {
                         onChanged: (bool? value) {
                           setState(() {
                             task.isCompleted = value!;
+                            _saveTasks(); // Save tasks immediately after changing completion status
                           });
                         },
                       ),

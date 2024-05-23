@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:gestion_de_taches/views/ConnectionPage.dart';
-import 'HomePage.dart';
-import 'TasksPage.dart';
-import 'AgendaPage.dart';
+import 'package:gestion_de_taches/views/shared_prefs_service.dart';
+import 'views/ConnectionPage.dart';
+import 'views/HomePage.dart';
+import 'views/TasksPage.dart';
+import 'views/AgendaPage.dart';
 
-void main() => runApp(const NavigationBarApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final SharedPrefsService _prefsService = SharedPrefsService();
+  final bool isLoggedIn = await _prefsService.isLoggedIn();
+  runApp(NavigationBarApp(isLoggedIn: isLoggedIn));
+}
 
 class NavigationBarApp extends StatelessWidget {
-  const NavigationBarApp({super.key});
+  final bool isLoggedIn;
+  const NavigationBarApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
-      home: const LoginPage(),
+      home: isLoggedIn ? const NavigationExample() :  LoginPage(),
     );
   }
 }
