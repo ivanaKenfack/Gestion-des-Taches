@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gestion_de_taches/views/ConnectionPage.dart';
 import 'package:gestion_de_taches/views/HomePage.dart';
 
-import 'package:gestion_de_taches/main.dart';
+import 'package:gestion_de_taches/views/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

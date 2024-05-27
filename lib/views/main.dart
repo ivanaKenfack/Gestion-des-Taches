@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gestion_de_taches/views/shared_prefs_service.dart';
-import 'views/ConnectionPage.dart';
-import 'views/HomePage.dart';
-import 'views/TasksPage.dart';
-import 'views/AgendaPage.dart';
+import 'ConnectionPage.dart';
+import 'HomePage.dart';
+import 'TasksPage.dart';
+import 'AgendaPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
