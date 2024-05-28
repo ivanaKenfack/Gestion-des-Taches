@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'HomePage.dart';
 import 'TasksPage.dart';
-import 'main.dart';
+import '../main.dart';
 import 'shared_prefs_service.dart';
 import '../models/user.dart';
 
