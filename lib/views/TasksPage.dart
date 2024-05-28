@@ -1,9 +1,8 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:gestion_de_taches/models/Task.dart'; // Assurez-vous d'importer le fichier Task correctement
+import 'package:gestion_de_taches/models/Task.dart';
+import 'shared_prefs_service.dart';
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -13,41 +12,36 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  late List<Task> _tasks = [];
+  List<Task> _tasks = [];
+  final SharedPrefsService _prefsService = SharedPrefsService();
+  String? _username;
 
   @override
   void initState() {
     super.initState();
-    _loadTasks();
+    _loadUsernameAndTasks();
+  }
+
+  void _loadUsernameAndTasks() async {
+    _username = await _prefsService.getUsername();
+    if (_username != null) {
+      _loadTasks();
+    }
   }
 
   void _loadTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final tasksJson = prefs.getStringList('tasks');
-    print('Loaded tasks JSON: $tasksJson'); // Debug print
-    if (tasksJson != null) {
+    if (_username != null) {
+      final loadedTasks = await _prefsService.loadTasks(_username!);
       setState(() {
-        _tasks = tasksJson.map((json) {
-          print('Decoding task JSON: $json'); // Debug print
-          return Task.fromJson(Map<String, dynamic>.from(jsonDecode(json)));
-        }).toList();
-        print('Tasks loaded: $_tasks'); // Debug print
+        _tasks = loadedTasks;
       });
-    } else {
-      _tasks = [];
-      print('No tasks found, initialized with empty list.'); // Debug print
     }
   }
 
   void _saveTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final tasksJson = _tasks.map((task) {
-      final json = jsonEncode(task.toJson());
-      print('Encoding task to JSON: $json'); // Debug print
-      return json;
-    }).toList();
-    await prefs.setStringList('tasks', tasksJson.cast<String>());
-    print('Tasks saved: $tasksJson'); // Debug print
+    if (_username != null) {
+      await _prefsService.saveTasks(_username!, _tasks);
+    }
   }
 
   final TextEditingController _titleController = TextEditingController();

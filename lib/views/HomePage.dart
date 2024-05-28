@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gestion_de_taches/models/Project.dart';
-import 'package:gestion_de_taches/models/Task.dart';
+import '../models/Task.dart';
 import 'shared_prefs_service.dart';
-import 'ConnectionPage.dart'; // Assurez-vous d'importer la page de connexion
+import 'ConnectionPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,26 +39,29 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserName();
-    _loadProjects();
+    _loadUserNameAndProjects();
   }
 
-  void _loadUserName() async {
-    final loadedUserName = await _prefsService.getUsername();
-    setState(() {
-      userName = loadedUserName;
-    });
+  void _loadUserNameAndProjects() async {
+    userName = await _prefsService.getUsername();
+    if (userName != null) {
+      _loadProjects();
+    }
   }
 
   void _loadProjects() async {
-    final loadedProjects = await _prefsService.loadProjects();
-    setState(() {
-      projects = loadedProjects;
-    });
+    if (userName != null) {
+      final loadedProjects = await _prefsService.loadProjects(userName!);
+      setState(() {
+        projects = loadedProjects;
+      });
+    }
   }
 
-  void _saveProjects() {
-    _prefsService.saveProjects(projects);
+  void _saveProjects() async {
+    if (userName != null) {
+      await _prefsService.saveProjects(userName!, projects);
+    }
   }
 
   void _addProject(Project project) {
